@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>To-Do List Cep</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.10"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns@2.30.0/dist/date-fns.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -38,13 +38,90 @@
         input:required + .required-asterisk {
             display: none;
         }
+        .category-box {
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            background-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+        .category-box:hover {
+            transform: translateY(-2px);
+        }
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            background-color: #ffffff;
+            color: #4b5563;
+            font-weight: bold;
+            font-size: 0.875rem;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            transition: background-color 0.2s ease;
+        }
+        .info-icon:hover {
+            background-color: #e5e7eb;
+        }
+        .info-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 10;
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            max-width: 20rem;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+        }
+        .info-container:hover .info-box {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        @media (max-width: 640px) {
+            .category-box {
+                padding: 1rem;
+            }
+            .flex-col-sm\:flex-row {
+                flex-direction: column;
+            }
+            .info-box {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) !important;
+                max-width: 90%;
+                z-index: 20;
+            }
+            .info-box.hidden {
+                display: none;
+            }
+        }
+        @media (min-width: 1024px) {
+            .desktop-layout {
+                display: grid;
+                grid-template-columns: 1fr 2fr;
+                gap: 1.5rem;
+            }
+            .category-box {
+                min-height: 300px;
+            }
+        }
     </style>
 </head>
 
-<body class="bg-gradient-to-br from-blue-100 to-purple-100 min-h-screen flex items-center justify-center p-4 sm:p-6">
+<body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen p-4 sm:p-6">
     <!-- Auth Section -->
-    <div id="authSection" class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-md transform transition-all duration-300">
-        <!-- Login Form -->
+    <div id="authSection" class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-md mx-auto transform transition-all duration-300">
         <div id="loginForm" class="block">
             <h2 class="text-2xl sm:text-3xl font-bold mb-6 text-center text-gray-800">Masuk ke To-Do List</h2>
             <div class="password-wrapper">
@@ -61,7 +138,6 @@
             <button onclick="login()" class="bg-blue-600 text-white px-4 py-3 rounded-lg w-full hover:bg-blue-700 transition duration-200 text-sm sm:text-base">Masuk</button>
             <p class="text-center mt-4 text-sm">Belum punya akun? <a href="#" onclick="toggleForm('register')" class="text-blue-600 hover:underline">Daftar</a></p>
         </div>
-        <!-- Register Form -->
         <div id="registerForm" class="hidden">
             <h2 class="text-2xl sm:text-3xl font-bold mb-6 text-center text-gray-800">Daftar ke To-Do List</h2>
             <div class="password-wrapper">
@@ -81,19 +157,49 @@
     </div>
 
     <!-- To-Do List Section -->
-    <div id="todoSection" class="bg-white shadow-2xl rounded-2xl w-full max-w-full sm:max-w-2xl p-6 sm:p-8 hidden">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl sm:text-4xl font-bold text-gray-800">📝 To-Do List Cep</h1>
-            <button onclick="logout()" class="text-red-500 hover:text-red-700 font-medium text-sm sm:text-base">Logout</button>
+    <div id="todoSection" class="hidden max-w-7xl mx-auto">
+        <div class="desktop-layout">
+            <!-- Section Utama -->
+            <div class="category-box p-6 sm:p-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">📝 To-Do List Cep</h1>
+                    <button onclick="logout()" class="text-red-500 hover:text-red-700 font-medium text-sm sm:text-base">Logout</button>
+                </div>
+                <div class="bg-gray-300 text-white p-3 rounded-t-lg relative">
+                    <div class="info-container inline-flex items-center">
+                        <h2 class="text-xl font-bold">Tugas Baru</h2>
+                        <span id="infoIcon" class="info-icon">i</span>
+                        <div id="infoBox" class="info-box hidden">
+                            <h3 class="text-lg font-semibold mb-2">Cara Menggunakan To-Do List:</h3>
+                            <ul class="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                                <li>Login atau daftar dengan email dan password.</li>
+                                <li>Tambah tugas baru di kolom "Tugas Baru" beserta deadline (opsional).</li>
+                                <li>Klik "Tambah Kategori" untuk membuat kategori baru dengan nama dan warna.</li>
+                                <li>Seret tugas dari "Tugas Baru" ke kategori tujuan untuk mengelompokkannya.</li>
+                                <li>Klik "Edit" pada kategori untuk ubah nama atau warna, atau "Hapus" untuk menghapus kategori (tugas kembali ke "Tugas Baru").</li>
+                                <li>Tandai tugas selesai (✔) atau hapus (🗑).</li>
+                                <li>Klik "Refresh" untuk memuat ulang data jika kategori atau tugas tidak muncul.</li>
+                                <li>Dapatkan notifikasi browser dan email untuk deadline kurang dari 24 jam.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <div class="flex flex-col sm:flex-row gap-3 mb-4">
+                        <input id="taskInput" type="text" placeholder="Tambah tugas..." class="flex-grow px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm sm:text-base">
+                        <input id="deadlineInput" type="text" placeholder="Pilih tanggal..." class="px-4 py-3 border rounded-lg text-sm sm:text-base">
+                        <button onclick="addTask()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200 text-sm sm:text-base">Tambah</button>
+                    </div>
+                    <div class="mb-4 flex gap-3">
+                        <button onclick="promptAddCategory()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition duration-200 text-sm sm:text-base">Tambah Kategori</button>
+                        <button onclick="refreshData()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200 text-sm sm:text-base">Refresh</button>
+                    </div>
+                </div>
+                <ul id="mainTaskList" data-category="Main" class="space-y-3"></ul>
+            </div>
+            <!-- Section Kategori -->
+            <div id="categorySections" class="space-y-6"></div>
         </div>
-
-        <div class="flex flex-col sm:flex-row gap-3 mb-6">
-            <input id="taskInput" type="text" placeholder="Tambah tugas..." class="flex-grow px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm sm:text-base">
-            <input id="deadlineInput" type="text" placeholder="Pilih tanggal..." class="px-4 py-3 border rounded-lg text-sm sm:text-base">
-            <button onclick="addTask()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200 text-sm sm:text-base">Tambah</button>
-        </div>
-
-        <ul id="taskList" class="space-y-3 max-h-[60vh] overflow-y-auto"></ul>
     </div>
 
     <!-- Firebase SDK -->
@@ -120,7 +226,7 @@
             minDate: "today",
             enableTime: false,
             locale: {
-                firstDayOfWeek: 1 // Start week on Monday
+                firstDayOfWeek: 1
             },
             onOpen: function() {
                 deadlineInput.classList.add("ring-2", "ring-blue-400");
@@ -132,12 +238,23 @@
 
         const authSection = document.getElementById("authSection");
         const todoSection = document.getElementById("todoSection");
-        const taskList = document.getElementById("taskList");
+        const mainTaskList = document.getElementById("mainTaskList");
+        const categorySections = document.getElementById("categorySections");
         const taskInput = document.getElementById("taskInput");
+        const infoIcon = document.getElementById("infoIcon");
+        const infoBox = document.getElementById("infoBox");
 
         let taskRef = null;
+        let categoryRef = null;
+        let categories = [];
 
-        // Sanitize input to prevent XSS
+        // Objek untuk menyimpan warna kategori
+        const categoryColors = {
+            available: ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-red-500', 'bg-yellow-500', 'bg-indigo-500', 'bg-pink-500', 'bg-teal-500'],
+            assigned: {}
+        };
+
+        // Sanitize input
         function sanitizeInput(input) {
             const div = document.createElement("div");
             div.textContent = input;
@@ -155,8 +272,10 @@
                     return "Email sudah terdaftar!";
                 case "auth/weak-password":
                     return "Password terlalu lemah, gunakan minimal 6 karakter!";
+                case "permission-denied":
+                    return "Akses ditolak. Pastikan aturan Firestore sudah benar atau login ulang.";
                 default:
-                    return "Terjadi kesalahan, coba lagi nanti.";
+                    return `Terjadi kesalahan: ${error.message}`;
             }
         }
 
@@ -172,12 +291,17 @@
             }
         }
 
+        // Handle info icon for mobile
+        infoIcon.addEventListener("click", () => {
+            if (window.innerWidth <= 640) {
+                infoBox.classList.toggle("hidden");
+            }
+        });
+
         // Check for saved login
         window.onload = () => {
             auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-                .then(() => {
-                    // No need to manually check localStorage; Firebase handles session
-                })
+                .then(() => {})
                 .catch(e => {
                     Swal.fire({
                         icon: "error",
@@ -200,17 +324,70 @@
             if (user) {
                 authSection.classList.add("hidden");
                 todoSection.classList.remove("hidden");
+
+                // Referensi ke tasks dan categories
                 taskRef = db.collection("tasks").where("uid", "==", user.uid);
-                taskRef.orderBy("createdAt").onSnapshot(snapshot => {
-                    console.log("Snapshot received, docs count: ", snapshot.size);
-                    renderTasks(snapshot);
-                    checkDeadlineAlerts(snapshot);
+                categoryRef = db.collection("categories").doc(user.uid);
+
+                // Debugging: Log UID dan data
+                console.log("User UID:", user.uid);
+                categoryRef.get().then(doc => {
+                    console.log("Categories data:", doc.exists ? doc.data() : "No categories data");
+                    // Inisialisasi dokumen categories jika belum ada
+                    if (!doc.exists) {
+                        categoryRef.set({ categories: [] }, { merge: true })
+                            .then(() => console.log("Initialized empty categories document"))
+                            .catch(e => console.error("Failed to initialize categories:", e));
+                    }
+                }).catch(e => console.error("Error fetching categories:", e));
+                taskRef.get().then(snapshot => {
+                    console.log("Tasks count:", snapshot.size);
+                }).catch(e => console.error("Error fetching tasks:", e));
+
+                // Sinkronisasi categories
+                categoryRef.onSnapshot(doc => {
+                    console.log("Categories snapshot:", doc.exists ? doc.data() : "No data");
+                    if (doc.exists) {
+                        const data = doc.data();
+                        // Jika categories belum ada, konversi dari color dan name dengan perbaikan
+                        if (!data.categories && data.name && data.color) {
+                            categories = [{ name: data.color, color: data.name }]; // Perbaikan: name jadi "kampus", color jadi "blue"
+                            categoryRef.set({ categories }, { merge: true })
+                                .then(() => console.log("Converted old structure to new structure with corrected values"))
+                                .catch(e => console.error("Failed to convert structure:", e));
+                        } else {
+                            categories = data.categories || [];
+                        }
+                        categoryColors.assigned = {};
+                        categories.forEach(cat => {
+                            categoryColors.assigned[cat.name] = cat.color || categoryColors.available[0]; // Pastikan color diisi
+                        });
+                    } else {
+                        categories = [];
+                        categoryColors.assigned = {};
+                    }
+                    console.log("Categories after processing:", categories);
+                    // Sinkronisasi tasks
+                    taskRef.orderBy("createdAt").onSnapshot(snapshot => {
+                        console.log("Tasks snapshot, docs count:", snapshot.size);
+                        renderTasks(snapshot);
+                        checkDeadlineAlerts(snapshot);
+                    }, error => {
+                        console.error("Tasks snapshot error:", error);
+                        Swal.fire({
+                            icon: "error",
+                            title: "Gagal memuat tugas",
+                            text: handleFirebaseError(error),
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    });
                 }, error => {
-                    console.error("Snapshot error: ", error);
+                    console.error("Categories snapshot error:", error);
                     Swal.fire({
                         icon: "error",
-                        title: "Gagal memuat tugas",
-                        text: "Tidak dapat memuat tugas, periksa koneksi Anda.",
+                        title: "Gagal memuat kategori",
+                        text: handleFirebaseError(error),
                         timer: 3000,
                         showConfirmButton: false
                     });
@@ -218,8 +395,12 @@
             } else {
                 authSection.classList.remove("hidden");
                 todoSection.classList.add("hidden");
-                taskList.innerHTML = '<li class="text-center text-gray-500 text-sm sm:text-base">Silakan login untuk melihat tugas.</li>';
+                mainTaskList.innerHTML = '<li class="text-center text-gray-500 text-sm sm:text-base">Silakan login untuk melihat tugas.</li>';
+                categorySections.innerHTML = '';
                 taskRef = null;
+                categoryRef = null;
+                categories = [];
+                categoryColors.assigned = {};
             }
         });
 
@@ -328,55 +509,337 @@
             });
         }
 
-        // Render tasks
-        function renderTasks(snapshot) {
-            taskList.innerHTML = "";
-            if (snapshot.empty) {
-                taskList.innerHTML = '<li class="text-center text-gray-500 text-sm sm:text-base">Belum ada tugas.</li>';
+        // Refresh data
+        function refreshData() {
+            if (!auth.currentUser) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Belum login",
+                    text: "Silakan login terlebih dahulu!",
+                    timer: 3000,
+                    showConfirmButton: false
+                });
                 return;
             }
-            snapshot.docs.forEach(doc => {
-                const data = doc.data();
-                const li = document.createElement("li");
-                li.className = "bg-gray-50 p-4 rounded-lg flex justify-between items-center cursor-move shadow-sm hover:shadow-md transition duration-200";
-                li.setAttribute("data-id", doc.id);
+            Swal.fire({
+                icon: "success",
+                title: "Data diperbarui",
+                text: "Data kategori dan tugas telah dimuat ulang!",
+                timer: 2000,
+                showConfirmButton: false
+            });
+            // Data akan diperbarui otomatis melalui onSnapshot
+        }
 
-                const isCompleted = data.completed === true;
-                const deadline = data.deadline ? formatDeadline(data.deadline) : "";
-
-                li.innerHTML = `
-                    <div class="flex items-center">
-                        <span class="${isCompleted ? 'line-through text-gray-400' : 'text-gray-800'} font-medium text-sm sm:text-base">${data.text}</span>
-                        ${deadline ? `<span class="ml-3 text-xs sm:text-sm ${getDeadlineColor(data.deadline)} px-2 py-1 rounded-full">${deadline}</span>` : ''}
-                    </div>
-                    <div class="space-x-3">
-                        <button onclick="toggleComplete('${doc.id}', ${isCompleted})" class="text-green-500 hover:text-green-700 text-sm sm:text-base">✔</button>
-                        <button onclick="deleteTask('${doc.id}')" class="text-red-500 hover:text-red-700 text-sm sm:text-base">🗑</button>
-                    </div>
-                `;
-                taskList.appendChild(li);
+        // Prompt untuk menambah kategori
+        function promptAddCategory() {
+            Swal.fire({
+                title: 'Tambah Kategori Baru',
+                html: `
+                    <input id="swal-category-name" class="swal2-input" placeholder="Nama kategori">
+                    <select id="swal-category-color" class="swal2-select mt-2">
+                        ${categoryColors.available.map(color => `<option value="${color}">${color.replace('bg-', '').replace('-500', '')}</option>`).join('')}
+                    </select>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Tambah',
+                cancelButtonText: 'Batal',
+                preConfirm: () => {
+                    const name = document.getElementById('swal-category-name').value.trim();
+                    const color = document.getElementById('swal-category-color').value;
+                    if (!name) {
+                        Swal.showValidationMessage('Nama kategori tidak boleh kosong!');
+                        return false;
+                    }
+                    return { name, color };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const { name, color } = result.value;
+                    const sanitizedName = sanitizeInput(name);
+                    if (categories.some(cat => cat.name === sanitizedName)) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Kategori sudah ada",
+                            text: "Nama kategori sudah digunakan!",
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                        return;
+                    }
+                    const newCategory = { name: sanitizedName, color };
+                    categories.push(newCategory);
+                    categoryColors.assigned[sanitizedName] = color;
+                    categoryRef.set({ categories }, { merge: true })
+                        .then(() => {
+                            renderCategory(sanitizedName, color);
+                            Swal.fire({
+                                icon: "success",
+                                title: "Kategori ditambahkan",
+                                text: "Kategori baru berhasil disimpan!",
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        })
+                        .catch(e => {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Gagal menambah kategori",
+                                text: handleFirebaseError(e),
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
+                        });
+                }
             });
         }
 
-        // Format deadline
-        function formatDeadline(deadline) {
-            const today = new Date();
-            const deadlineDate = new Date(deadline + "T23:59:59");
-            const diffDays = Math.ceil((deadlineDate - today) / (1000 * 60 * 60 * 24));
-            if (diffDays === 0) return "Hari ini";
-            if (diffDays === 1) return "Besok";
-            if (diffDays < 0) return "Lewat";
-            return `${diffDays} hari lagi`;
+        // Render kategori baru
+        function renderCategory(category, color) {
+            const categoryBox = document.createElement("div");
+            categoryBox.className = "category-box p-6 sm:p-8";
+            categoryBox.innerHTML = `
+                <div class="flex justify-between items-center ${color} text-white p-3 rounded-t-lg">
+                    <h2 class="text-xl font-bold">${category}</h2>
+                    <div class="space-x-2">
+                        <button onclick="editCategory('${category}')" class="text-white hover:text-gray-200 text-sm">Edit</button>
+                        <button onclick="deleteCategory('${category}')" class="text-white hover:text-gray-200 text-sm">Hapus</button>
+                    </div>
+                </div>
+                <ul class="space-y-3" data-category="${category}"></ul>
+            `;
+            categorySections.appendChild(categoryBox);
+            initSortable(categoryBox.querySelector("ul"));
         }
 
-        // Color for deadline
-        function getDeadlineColor(deadline) {
-            const today = new Date();
-            const deadlineDate = new Date(deadline + "T23:59:59");
-            const diffDays = Math.ceil((deadlineDate - today) / (1000 * 60 * 60 * 24));
-            if (diffDays < 0) return "bg-red-100 text-red-600";
-            if (diffDays <= 1) return "bg-yellow-100 text-yellow-600";
-            return "bg-green-100 text-green-600";
+        // Edit kategori (nama dan warna)
+        function editCategory(category) {
+            Swal.fire({
+                title: 'Edit Kategori',
+                html: `
+                    <input id="swal-category-name" class="swal2-input" value="${category}" placeholder="Nama kategori">
+                    <select id="swal-category-color" class="swal2-select mt-2">
+                        ${categoryColors.available.map(color => `<option value="${color}" ${color === categoryColors.assigned[category] ? 'selected' : ''}>${color.replace('bg-', '').replace('-500', '')}</option>`).join('')}
+                    </select>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Simpan',
+                cancelButtonText: 'Batal',
+                preConfirm: () => {
+                    const name = document.getElementById('swal-category-name').value.trim();
+                    const color = document.getElementById('swal-category-color').value;
+                    if (!name) {
+                        Swal.showValidationMessage('Nama kategori tidak boleh kosong!');
+                        return false;
+                    }
+                    return { name, color };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const { name, color } = result.value;
+                    const newCategoryName = sanitizeInput(name);
+                    if (newCategoryName !== category && categories.some(cat => cat.name === newCategoryName)) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Kategori sudah ada",
+                            text: "Nama kategori sudah digunakan!",
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                        return;
+                    }
+                    const batch = db.batch();
+                    taskRef.where("category", "==", category).get().then(snapshot => {
+                        snapshot.forEach(doc => {
+                            batch.update(doc.ref, { category: newCategoryName });
+                        });
+                        const newCategories = categories.filter(cat => cat.name !== category);
+                        newCategories.push({ name: newCategoryName, color });
+                        batch.set(categoryRef, { categories: newCategories }, { merge: true });
+                        batch.commit()
+                            .then(() => {
+                                categories = newCategories;
+                                categoryColors.assigned[newCategoryName] = color;
+                                delete categoryColors.assigned[category];
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Kategori diperbarui",
+                                    text: "Nama dan warna kategori berhasil diubah!",
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                            })
+                            .catch(e => {
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Gagal memperbarui kategori",
+                                    text: handleFirebaseError(e),
+                                    timer: 3000,
+                                    showConfirmButton: false
+                                });
+                            });
+                    }).catch(e => {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Gagal mengakses tugas",
+                            text: handleFirebaseError(e),
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    });
+                }
+            });
+        }
+
+        // Hapus kategori
+        function deleteCategory(category) {
+            Swal.fire({
+                title: 'Hapus Kategori',
+                text: `Apakah Anda yakin ingin menghapus kategori "${category}"? Tugas dalam kategori ini akan dipindahkan ke Tugas Baru.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Hapus',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const batch = db.batch();
+                    taskRef.where("category", "==", category).get().then(snapshot => {
+                        snapshot.forEach(doc => {
+                            batch.update(doc.ref, { category: null });
+                        });
+                        const newCategories = categories.filter(cat => cat.name !== category);
+                        batch.set(categoryRef, { categories: newCategories }, { merge: true });
+                        batch.commit()
+                            .then(() => {
+                                categories = newCategories;
+                                delete categoryColors.assigned[category];
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Kategori dihapus",
+                                    text: "Kategori berhasil dihapus, tugas dipindahkan ke Tugas Baru.",
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                            })
+                            .catch(e => {
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Gagal menghapus kategori",
+                                    text: handleFirebaseError(e),
+                                    timer: 3000,
+                                    showConfirmButton: false
+                                });
+                            });
+                    }).catch(e => {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Gagal mengakses tugas",
+                            text: handleFirebaseError(e),
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    });
+                }
+            });
+        }
+
+        // Render tasks
+        function renderTasks(snapshot) {
+            mainTaskList.innerHTML = "";
+            categorySections.innerHTML = "";
+            if (snapshot.empty && categories.length === 0) {
+                mainTaskList.innerHTML = '<li class="text-center text-gray-500 text-sm sm:text-base">Belum ada tugas.</li>';
+                return;
+            }
+
+            // Kelompokkan tugas
+            const tasksByCategory = { "Main": [] };
+            snapshot.docs.forEach(doc => {
+                const data = doc.data();
+                const category = data.category || "Main";
+                if (!tasksByCategory[category]) tasksByCategory[category] = [];
+                tasksByCategory[category].push({ id: doc.id, ...data });
+            });
+
+            // Render section utama
+            tasksByCategory["Main"].forEach(task => {
+                renderTask(task, mainTaskList);
+            });
+            initSortable(mainTaskList);
+
+            // Render section kategori
+            categories.forEach(category => {
+                const color = categoryColors.assigned[category.name] || categoryColors.available[Math.floor(Math.random() * categoryColors.available.length)];
+                categoryColors.assigned[category.name] = color;
+                const categoryBox = document.createElement("div");
+                categoryBox.className = "category-box p-6 sm:p-8";
+                categoryBox.innerHTML = `
+                    <div class="flex justify-between items-center ${color} text-white p-3 rounded-t-lg">
+                        <h2 class="text-xl font-bold">${category.name}</h2>
+                        <div class="space-x-2">
+                            <button onclick="editCategory('${category.name}')" class="text-white hover:text-gray-200 text-sm">Edit</button>
+                            <button onclick="deleteCategory('${category.name}')" class="text-white hover:text-gray-200 text-sm">Hapus</button>
+                        </div>
+                    </div>
+                    <ul class="space-y-3" data-category="${category.name}"></ul>
+                `;
+                const categoryUl = categoryBox.querySelector("ul");
+                if (tasksByCategory[category.name]) {
+                    tasksByCategory[category.name].forEach(task => {
+                        renderTask(task, categoryUl);
+                    });
+                }
+                categorySections.appendChild(categoryBox);
+                initSortable(categoryUl);
+            });
+        }
+
+        // Fungsi untuk merender tugas
+        function renderTask(task, ul) {
+            const li = document.createElement("li");
+            li.className = "bg-gray-50 p-4 rounded-lg flex justify-between items-center cursor-move shadow-sm hover:shadow-md transition duration-200";
+            li.setAttribute("data-id", task.id);
+
+            const isCompleted = task.completed === true;
+            const deadline = task.deadline ? formatDeadline(task.deadline) : "";
+
+            li.innerHTML = `
+                <div class="flex items-center">
+                    <span class="${isCompleted ? 'line-through text-gray-400' : 'text-gray-800'} font-medium text-sm sm:text-base">${task.text}</span>
+                    ${deadline ? `<span class="ml-3 text-xs sm:text-sm ${getDeadlineColor(task.deadline)} px-2 py-1 rounded-full">${deadline}</span>` : ''}
+                </div>
+                <div class="space-x-3">
+                    <button onclick="toggleComplete('${task.id}', ${isCompleted})" class="text-green-500 hover:text-green-700 text-sm sm:text-base">✔</button>
+                    <button onclick="deleteTask('${task.id}')" class="text-red-500 hover:text-red-700 text-sm sm:text-base">🗑</button>
+                </div>
+            `;
+            ul.appendChild(li);
+        }
+
+        // Inisialisasi SortableJS
+        function initSortable(ul) {
+            new Sortable(ul, {
+                group: 'tasks',
+                animation: 150,
+                onEnd: function(evt) {
+                    const taskId = evt.item.getAttribute("data-id");
+                    const newCategory = evt.to.getAttribute("data-category");
+                    const oldCategory = evt.from.getAttribute("data-category");
+                    if (newCategory !== oldCategory) {
+                        db.collection("tasks").doc(taskId).update({
+                            category: newCategory === "Main" ? null : newCategory
+                        }).catch(e => {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Gagal memindahkan tugas",
+                                text: handleFirebaseError(e),
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
+                        });
+                    }
+                }
+            });
         }
 
         // Add task
@@ -409,6 +872,7 @@
             const taskData = {
                 uid: user.uid,
                 text,
+                category: null,
                 deadline: deadline || null,
                 completed: false,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -429,7 +893,7 @@
                     Swal.fire({
                         icon: "error",
                         title: "Gagal menambah tugas",
-                        text: "Tidak dapat menyimpan tugas, coba lagi.",
+                        text: handleFirebaseError(e),
                         timer: 3000,
                         showConfirmButton: false
                     });
@@ -444,7 +908,7 @@
                 Swal.fire({
                     icon: "error",
                     title: "Gagal memperbarui tugas",
-                    text: "Tidak dapat memperbarui status tugas.",
+                    text: handleFirebaseError(e),
                     timer: 3000,
                     showConfirmButton: false
                 });
@@ -467,17 +931,33 @@
                     Swal.fire({
                         icon: "error",
                         title: "Gagal menghapus tugas",
-                        text: "Tidak dapat menghapus tugas.",
+                        text: handleFirebaseError(e),
                         timer: 3000,
                         showConfirmButton: false
                     });
                 });
         }
 
-        // Sortable drag & drop
-        new Sortable(taskList, {
-            animation: 150,
-        });
+        // Format deadline
+        function formatDeadline(deadline) {
+            const today = new Date();
+            const deadlineDate = new Date(deadline + "T23:59:59");
+            const diffDays = Math.ceil((deadlineDate - today) / (1000 * 60 * 60 * 24));
+            if (diffDays === 0) return "Hari ini";
+            if (diffDays === 1) return "Besok";
+            if (diffDays < 0) return "Lewat";
+            return `${diffDays} hari lagi`;
+        }
+
+        // Color for deadline
+        function getDeadlineColor(deadline) {
+            const today = new Date();
+            const deadlineDate = new Date(deadline + "T23:59:59");
+            const diffDays = Math.ceil((deadlineDate - today) / (1000 * 60 * 60 * 24));
+            if (diffDays < 0) return "bg-red-100 text-red-600";
+            if (diffDays <= 1) return "bg-yellow-100 text-yellow-600";
+            return "bg-green-100 text-green-600";
+        }
 
         // Deadline alerts with EmailJS
         function checkDeadlineAlerts(snapshot) {
@@ -490,7 +970,6 @@
                 const timeDiff = deadlineDate - now;
 
                 if (timeDiff > 0 && timeDiff <= 86400000) {
-                    // Browser notification
                     if (Notification.permission === "granted") {
                         new Notification("⚠️ Deadline Mepet!", {
                             body: `${data.text} - deadline besok!`
@@ -504,8 +983,6 @@
                             }
                         });
                     }
-
-                    // Email notification
                     sendDeadlineEmail(data.text, data.deadline);
                 }
             });
@@ -515,7 +992,7 @@
         function sendDeadlineEmail(text, deadline) {
             emailjs.send("service_jeb5c2f", "template_9tmqblq", { text, deadline })
                 .then(() => console.log("📧 Email terkirim!"))
-                .catch(err => console.error("❌ Gagal kirim email:", err));
+                .catch(err => console.error("❌ Gagal kirim email. Details:", err));
         }
     </script>
 </body>
